@@ -82,6 +82,7 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
 
         // TODO: do we lose precision by dividing by 1e18??  What if interest rate is 5.5%?  then tokenMintAmount = 100 * 0.945 = 94.5
         // or maybe it's okay because values are stored as wei?
+        // I'm almost certain the math is off because of precision decimals
 
         uint256 tokenMintAmount = (_usdcAmount * 1e18 * (1e18 - interestRateMantissa)) / 1e18;
 
@@ -113,9 +114,8 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
         // usdcAmount = _tokenAmount * (1 + interestRate)
         // ex: _tokenAmount = 100, interestRate = 0.05 (5%)
         // usdcAmount = 100 * 1.05 = 105
-        uint256 usdcAmount = (_tokenAmount *
-            1e18 *
-            (1e18 + interestRateMantissa)) / 1e18;
+        // I'm almost certain the math is off because of precision decimals
+        uint256 usdcAmount = (_tokenAmount*1e18 *(1e18 + interestRateMantissa)) / 1e18;
 
         // transfer out USDC
         usdc.transfer(msg.sender, usdcAmount);
