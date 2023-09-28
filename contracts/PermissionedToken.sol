@@ -7,12 +7,12 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-error NotWhitelisted();
-error InvalidInterestRate();
-
 // TODO: natspec
 contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
-    using SafeERC20 for ERC20;
+    using SafeERC20 for IERC20;
+
+    error NotWhitelisted();
+    error InvalidInterestRate();
 
     // ERC-20 usdc
     IERC20 public immutable usdc;
@@ -72,7 +72,7 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
         }
 
         // transfer in _usdcAmount of usdc
-        usdc.transferFrom(msg.sender, address(this), _usdcAmount);
+        usdc.safeTransferFrom(msg.sender, address(this), _usdcAmount);
 
         // TODO: verify math
         //
@@ -122,22 +122,22 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
             (1e18 + interestRateMantissa)) / 1e18;
 
         // transfer out USDC
-        usdc.transfer(msg.sender, usdcAmount);
+        usdc.safeTransfer(msg.sender, usdcAmount);
 
         emit Unwrapped(msg.sender, _tokenAmount, usdcAmount);
     }
 
     // is this the right way to override ERC20 transfer?
     function transfer(
-        address to,
-        uint256 amount
+        address _to,
+        uint256 _amount
     ) public virtual override returns (bool) {
         // Do I need to check if msg.sender is on the whitelist?
         // If they have a token balance they must already be on the whitelist I think
-        if (!whitelist[to]) {
+        if (!whitelist[_to]) {
             revert NotWhitelisted();
         }
-        return ERC20.transfer(to, amount);
+        return ERC20.transfer(_to, _amount);
     }
 
     function transferFrom(

@@ -4,8 +4,6 @@ pragma solidity ^0.8.19;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "./lib/EIP712.sol";
 
-error InvalidSignature();
-
 // TODO: natspec
 contract PermissionedSet is EIP712, Ownable {
     /// A constant hash of the claim operation's signature.
@@ -16,6 +14,8 @@ contract PermissionedSet is EIP712, Ownable {
         keccak256(
             "permission(address _caller,address[] _whitelist,address[] _blacklist)"
         );
+
+    error InvalidSignature();
 
     /// The name of the permission set
     string public permissionedSetName;
@@ -56,8 +56,8 @@ contract PermissionedSet is EIP712, Ownable {
                     abi.encode(
                         PERMISSION_TYPEHASH,
                         _caller,
-                        _whitelist,
-                        _blacklist
+                        keccak256(abi.encodePacked(_whitelist)),
+                        keccak256(abi.encodePacked(_blacklist))
                     )
                 )
             )
