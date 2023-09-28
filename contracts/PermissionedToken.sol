@@ -93,7 +93,7 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
     }
 
     function unwrap(
-        uint64 _tokenAmount,
+        uint256 _tokenAmount,
         address[] calldata _whitelist,
         address[] calldata _blacklist,
         uint8 _v,
@@ -121,6 +121,25 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
         usdc.transfer(msg.sender, usdcAmount);
 
         emit Unwrap(msg.sender, _tokenAmount, usdcAmount);
+    }
+
+    // is this the right way to override ERC20 transfer?
+    transfer(address _to, uint256 _amount) {
+        // Do I need to check if msg.sender is on the whitelist?
+        // If they have a token balance they must already be on the whitelist I think
+        if (!whitelist[_to]) {
+            revert NotWhitelisted();
+        }
+        ERC20.transfer(_to, _amount);
+    }
+
+    transferFrom(address _from, address _to, _amount) {
+        // Do I need to check if msg.sender is on the whitelist?
+        // If they have a token balance they must already be on the whitelist I think
+        if (!whitelist[_to]) {
+            revert NotWhitelisted();
+        }
+        ERC20.transferFrom(_from, _to, _amount);
     }
 
     function setInterestRateMantissa(
