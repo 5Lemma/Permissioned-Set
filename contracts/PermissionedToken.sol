@@ -30,13 +30,13 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
     event Wrapped(
         address indexed caller,
         uint256 indexed usdcAmountIn,
-        uint256 indexed tokenAmountOut,
+        uint256 indexed tokenAmountOut
     );
 
     event Unwrapped(
         address indexed caller,
         uint256 indexed tokenAmountIn,
-        uint256 indexed usdcAmountOut,
+        uint256 indexed usdcAmountOut
     );
 
     constructor(
@@ -84,7 +84,9 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
         // or maybe it's okay because values are stored as wei?
         // I'm almost certain the math is off because of precision decimals
 
-        uint256 tokenMintAmount = (_usdcAmount * 1e18 * (1e18 - interestRateMantissa)) / 1e18;
+        uint256 tokenMintAmount = (_usdcAmount *
+            1e18 *
+            (1e18 - interestRateMantissa)) / 1e18;
 
         // mint tokens to caller
         _mint(msg.sender, tokenMintAmount);
@@ -115,31 +117,40 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
         // ex: _tokenAmount = 100, interestRate = 0.05 (5%)
         // usdcAmount = 100 * 1.05 = 105
         // I'm almost certain the math is off because of precision decimals
-        uint256 usdcAmount = (_tokenAmount*1e18 *(1e18 + interestRateMantissa)) / 1e18;
+        uint256 usdcAmount = (_tokenAmount *
+            1e18 *
+            (1e18 + interestRateMantissa)) / 1e18;
 
         // transfer out USDC
         usdc.transfer(msg.sender, usdcAmount);
 
-        emit Unwrap(msg.sender, _tokenAmount, usdcAmount);
+        emit Unwrapped(msg.sender, _tokenAmount, usdcAmount);
     }
 
     // is this the right way to override ERC20 transfer?
-    transfer(address _to, uint256 _amount) {
+    function transfer(
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
         // Do I need to check if msg.sender is on the whitelist?
         // If they have a token balance they must already be on the whitelist I think
-        if (!whitelist[_to]) {
+        if (!whitelist[to]) {
             revert NotWhitelisted();
         }
-        ERC20.transfer(_to, _amount);
+        return ERC20.transfer(to, amount);
     }
 
-    transferFrom(address _from, address _to, _amount) {
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _amount
+    ) public virtual override returns (bool) {
         // Do I need to check if msg.sender is on the whitelist?
         // If they have a token balance they must already be on the whitelist I think
         if (!whitelist[_to]) {
             revert NotWhitelisted();
         }
-        ERC20.transferFrom(_from, _to, _amount);
+        return ERC20.transferFrom(_from, _to, _amount);
     }
 
     function setInterestRateMantissa(
