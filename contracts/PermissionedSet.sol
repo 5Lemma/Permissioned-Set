@@ -6,14 +6,7 @@ import {EIP712} from "./lib/EIP712.sol";
 
 error InvalidSignature();
 
-/**
-	@custom:benediction DEVS BENEDICAT ET PROTEGAT CONTRACTVS MEAM
-	@title Permissioned Set
-
-	TODO.
-
-	@custom:date September 27th, 2023.
-*/
+// TODO: natspec
 contract PermissionedSet is EIP712, Ownable {
     /// A constant hash of the claim operation's signature.
     // same typehash for wrappping and unwrapping

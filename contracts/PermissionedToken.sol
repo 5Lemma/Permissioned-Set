@@ -10,6 +10,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 error NotWhitelisted();
 error InvalidInterestRate();
 
+// TODO: natspec
 contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
     using SafeERC20 for ERC20;
 
@@ -80,6 +81,7 @@ contract PermissionedToken is PermissionedSet, ReentrancyGuard, ERC20 {
         // tokenMintAmount = 100 * 0.95 = 95
 
         // TODO: do we lose precision by dividing by 1e18??  What if interest rate is 5.5%?  then tokenMintAmount = 100 * 0.945 = 94.5
+        // or maybe it's okay because values are stored as wei?
 
         uint256 tokenMintAmount = (_usdcAmount * 1e18 * (1e18 - interestRateMantissa)) / 1e18;
 
